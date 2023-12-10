@@ -25,6 +25,8 @@ public class Game {
 	JFrame frame;
 	
 	BufferedImage buffer;
+	
+	Player player;
 
 	Game(int width, int height, String name, int scale) {
 		this.width = width - (width % scale);
@@ -41,8 +43,9 @@ public class Game {
 	}
 	
 	private void init() {
-		Point.setAspect(bWidth, bHeight);
+		Vec3.setAspect(bWidth, bHeight);
 		buffer = new BufferedImage(width/scale, height/scale, BufferedImage.TYPE_INT_RGB);
+		player = new Player();
 		frame = new JFrame(name);
 		JPanel panel = new JPanel() {
 			public void paint(Graphics g) {
@@ -65,7 +68,7 @@ public class Game {
 				bWidth = width / scale;
 				bHeight = height / scale;
 				buffer = new BufferedImage(bWidth, bHeight, BufferedImage.TYPE_INT_RGB);
-				Point.setAspect(bWidth, bHeight);
+				Vec3.setAspect(bWidth, bHeight);
 				frame.pack();
 			}
 			public void componentMoved(ComponentEvent e) {}
@@ -73,24 +76,36 @@ public class Game {
 			public void componentHidden(ComponentEvent e) {}
 		};
 		frame.addComponentListener(resize);
+		frame.addKeyListener(player);
 		frame.setVisible(true);
 	}
 	
 	private void mainloop() {
-		while (true) {
-			draw();
-			frame.repaint();
+		long lastTime = System.currentTimeMillis();
+		while (true) {				
+			if (lastTime + 50 <= System.currentTimeMillis()) {
+				lastTime = System.currentTimeMillis();
+				player.move();
+				draw();
+				frame.repaint();
+			}
 		}
+	}
+	
+	Cube c = new Cube();
+	{
+		c.pos = new Vec3(0.0f, 0.0f, 2.5f);
+		c.scale = new Vec3(1.0f, 1.0f, 1.0f);
+		c.rot = new Vec3(0.0f, 3.14152f/4.0f, 0.0f);
+		c.color = new Vec3(0.9f, 0.9f, 0.9f);
 	}
 	
 	private void draw() {
 		Graphics g = buffer.getGraphics();
-		
-		Cube m = new Cube(0, 0, 2.5f);
-		
-		g.setColor(Color.YELLOW);
-		
-		m.draw(g);
+		g.setColor(Color.BLACK);
+		g.fillRect(0, 0, bWidth, bHeight);
+
+		c.draw(g, player);
 	}
 	
 	public static void main(String[] args) {
